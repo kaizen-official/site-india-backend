@@ -29,7 +29,7 @@ const mysql = require('mysql2/promise');
   console.log('\n=== OLD STATES with status count ===');
   const [statusCount] = await pool.execute('SELECT status, COUNT(*) as cnt FROM states GROUP BY status');
   console.log(JSON.stringify(statusCount, null, 2));
-  
+
   console.log('\n=== OLD CITYS with status count ===');
   const [cityStatus] = await pool.execute('SELECT status, COUNT(*) as cnt FROM citys GROUP BY status');
   console.log(JSON.stringify(cityStatus, null, 2));
