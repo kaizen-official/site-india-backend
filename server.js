@@ -36,6 +36,25 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
+// ─── Search Dropdown Endpoints ───────────────────────────────────
+app.get('/api/search/options', async (req, res) => {
+  try {
+    const data = await db.getSearchDropdownData();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch search options' });
+  }
+});
+
+app.get('/api/search/cities/:stateId', async (req, res) => {
+  try {
+    const cities = await db.getCitiesByStateId(req.params.stateId);
+    res.json({ success: true, data: cities });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch cities' });
+  }
+});
+
 // ─── Health Check ────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

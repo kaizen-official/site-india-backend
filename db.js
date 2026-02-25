@@ -191,6 +191,133 @@ async function getAvailableCategories() {
   return await query(sql);
 }
 
+// ─── Metro City Queries ──────────────────────────────────────────
+
+async function getMetroCityBySlug(slug) {
+  const sql = `
+    SELECT m.metrocity_id, m.city_id, m.metrocity, m.category_name,
+           m.metrocity_name, m.metrocity_slug, m.metrocity_description,
+           m.image, m.yt_iframe_link,
+           m.meta_title, m.meta_description, m.meta_keyword,
+           c.city AS parent_city, c.city_slug AS parent_city_slug,
+           c.state_id, s.name AS state_name, s.slug AS state_slug
+    FROM metrocitys m
+    JOIN citys c ON m.city_id = c.city_id
+    JOIN states s ON c.state_id = s.state_id
+    WHERE m.metrocity_slug = ?
+    LIMIT 1
+  `;
+  const results = await query(sql, [slug]);
+  return results[0] || null;
+}
+
+async function getMetroCitiesByCityId(cityId, category) {
+  const categoryName = resolveCategory(category);
+  const sql = `
+    SELECT metrocity_id, city_id, metrocity, category_name,
+           metrocity_name, metrocity_slug
+    FROM metrocitys
+    WHERE city_id = ? AND category_name = ?
+    ORDER BY metrocity ASC
+  `;
+  return await query(sql, [cityId, categoryName]);
+}
+
+async function getAllMetroCitiesByCategory(category) {
+  const categoryName = resolveCategory(category);
+  const sql = `
+    SELECT m.metrocity_id, m.metrocity, m.metrocity_slug, m.metrocity_name,
+           c.city AS parent_city, c.city_slug AS parent_city_slug,
+           s.name AS state_name, s.slug AS state_slug
+    FROM metrocitys m
+    JOIN citys c ON m.city_id = c.city_id
+    JOIN states s ON c.state_id = s.state_id
+    WHERE m.category_name = ?
+    ORDER BY s.name ASC, c.city ASC, m.metrocity ASC
+  `;
+  return await query(sql, [categoryName]);
+}
+
+// ─── Search Dropdown Data ────────────────────────────────────────
+
+async function getSearchDropdownData() {
+  const servicesSql = `SELECT DISTINCT category_name FROM citys ORDER BY category_name ASC`;
+  const statesSql = `SELECT DISTINCT s.state_id, s.name, s.slug FROM states s INNER JOIN citys c ON s.state_id = c.state_id ORDER BY s.name ASC`;
+  const [services, states] = await Promise.all([
+    query(servicesSql),
+    query(statesSql)
+  ]);
+  return { services, states };
+}
+
+async function getCitiesByStateId(stateId) {
+  const sql = `
+    SELECT DISTINCT city, city_slug, category_name
+    FROM citys
+    WHERE state_id = ?
+    ORDER BY city ASC
+  `;
+  return await query(sql, [stateId]);
+}
+
+// ─── Posts / Blog Functions ───────────────────────────────────────
+async function getAllPosts(page = 1, limit = 12, categoryId = null) {
+  const offset = (page - 1) * limit;
+  let sql, params;
+  if (categoryId) {
+    sql = `SELECT p.*, c.name as category_name, c.slug as category_slug
+           FROM posts p LEFT JOIN categories c ON p.category_id = c.category_id
+           WHERE p.status = 0 AND p.category_id = ?
+           ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
+    params = [categoryId, limit, offset];
+  } else {
+    sql = `SELECT p.*, c.name as category_name, c.slug as category_slug
+           FROM posts p LEFT JOIN categories c ON p.category_id = c.category_id
+           WHERE p.status = 0
+           ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
+    params = [limit, offset];
+  }
+  return await query(sql, params);
+}
+
+async function getPostsCount(categoryId = null) {
+  let sql, params;
+  if (categoryId) {
+    sql = 'SELECT COUNT(*) as total FROM posts WHERE status = 0 AND category_id = ?';
+    params = [categoryId];
+  } else {
+    sql = 'SELECT COUNT(*) as total FROM posts WHERE status = 0';
+    params = [];
+  }
+  const rows = await query(sql, params);
+  return rows[0].total;
+}
+
+async function getPostBySlug(slug) {
+  const sql = `SELECT p.*, c.name as category_name, c.slug as category_slug
+               FROM posts p LEFT JOIN categories c ON p.category_id = c.category_id
+               WHERE p.post_slug = ? AND p.status = 0 LIMIT 1`;
+  const rows = await query(sql, [slug]);
+  return rows.length > 0 ? rows[0] : null;
+}
+
+async function getRelatedPosts(categoryId, excludePostId, limit = 3) {
+  const sql = `SELECT p.*, c.name as category_name, c.slug as category_slug
+               FROM posts p LEFT JOIN categories c ON p.category_id = c.category_id
+               WHERE p.status = 0 AND p.category_id = ? AND p.post_id != ?
+               ORDER BY p.created_at DESC LIMIT ?`;
+  return await query(sql, [categoryId, excludePostId, limit]);
+}
+
+async function getPostCategories() {
+  const sql = `SELECT c.category_id, c.name, c.slug, COUNT(p.post_id) as post_count
+               FROM categories c INNER JOIN posts p ON c.category_id = p.category_id
+               WHERE p.status = 0
+               GROUP BY c.category_id, c.name, c.slug
+               ORDER BY c.name ASC`;
+  return await query(sql);
+}
+
 module.exports = {
   query,
   resolveCategory,
@@ -203,5 +330,15 @@ module.exports = {
   getCityBySlugAndCategory,
   getStatesWithCitiesByCategory,
   getAllCitiesByCategory,
-  getAvailableCategories
+  getAvailableCategories,
+  getMetroCityBySlug,
+  getMetroCitiesByCityId,
+  getAllMetroCitiesByCategory,
+  getSearchDropdownData,
+  getCitiesByStateId,
+  getAllPosts,
+  getPostsCount,
+  getPostBySlug,
+  getRelatedPosts,
+  getPostCategories
 };

@@ -3,14 +3,39 @@ const router = express.Router();
 const db = require('../db');
 
 // ─── GET /api/cities/:slug ───────────────────────────────────────
-// Returns a city by its city_slug (all categories)
+// Returns a city by its city_slug, falls back to metrocitys table
 router.get('/:slug', async (req, res) => {
   try {
     const city = await db.getCityBySlug(req.params.slug);
-    if (!city) {
-      return res.status(404).json({ success: false, message: 'City not found' });
+    if (city) {
+      return res.json({ success: true, data: city, type: 'city' });
     }
-    res.json({ success: true, data: city });
+    // Fallback: check metrocitys table
+    const metro = await db.getMetroCityBySlug(req.params.slug);
+    if (metro) {
+      // Normalize metrocity fields to match city shape for frontend
+      const normalized = {
+        city_id: metro.metrocity_id,
+        state_id: metro.state_id,
+        city: metro.metrocity,
+        category_name: metro.category_name,
+        city_name: metro.metrocity_name,
+        city_slug: metro.metrocity_slug,
+        city_description: metro.metrocity_description,
+        image: metro.image,
+        yt_iframe_link: metro.yt_iframe_link,
+        meta_title: metro.meta_title,
+        meta_description: metro.meta_description,
+        meta_keyword: metro.meta_keyword,
+        state_name: metro.state_name,
+        state_slug: metro.state_slug,
+        parent_city: metro.parent_city,
+        parent_city_slug: metro.parent_city_slug,
+        is_metrocity: true
+      };
+      return res.json({ success: true, data: normalized, type: 'metrocity' });
+    }
+    return res.status(404).json({ success: false, message: 'City not found' });
   } catch (error) {
     console.error('Error fetching city:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch city' });
