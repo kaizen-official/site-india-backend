@@ -109,32 +109,23 @@ const TABLE_CONFIG = {
         editable: ['city_id', 'metrocity', 'category_name', 'metrocity_name', 'metrocity_slug', 'metrocity_description', 'image', 'yt_iframe_link', 'meta_title', 'meta_description', 'meta_keyword', 'status'],
         icon: 'metro',
     },
-    global_countries: {
-        displayName: 'Global Countries',
+    faqs: {
+        displayName: 'FAQs',
         primaryKey: 'id',
-        columns: ['id', 'name', 'web_slug', 'digital_slug', 'gmb_slug', 'content_slug', 'seo_slug', 'status', 'created_by', 'created_at', 'updated_at'],
-        searchable: ['name'],
-        listColumns: ['id', 'name', 'status', 'created_at'],
-        editable: ['name', 'web_slug', 'digital_slug', 'gmb_slug', 'content_slug', 'seo_slug', 'status'],
-        icon: 'globe',
+        columns: ['id', 'category_name', 'page_slug', 'question', 'answer', 'sort_order', 'status', 'created_at', 'updated_at'],
+        searchable: ['category_name', 'page_slug', 'question', 'answer'],
+        listColumns: ['id', 'category_name', 'page_slug', 'question', 'sort_order', 'status'],
+        editable: ['category_name', 'page_slug', 'question', 'answer', 'sort_order', 'status'],
+        icon: 'faq',
     },
-    global_states: {
-        displayName: 'Global States',
-        primaryKey: 'state_id',
-        columns: ['state_id', 'country_id', 'name', 'web_slug', 'digital_slug', 'gmb_slug', 'content_slug', 'seo_slug', 'status', 'created_by', 'created_at', 'updated_at'],
-        searchable: ['name'],
-        listColumns: ['state_id', 'country_id', 'name', 'status', 'created_at'],
-        editable: ['country_id', 'name', 'web_slug', 'digital_slug', 'gmb_slug', 'content_slug', 'seo_slug', 'status'],
-        icon: 'globalstate',
-    },
-    global_cities: {
-        displayName: 'Global Cities',
-        primaryKey: 'city_id',
-        columns: ['city_id', 'state_id', 'city', 'web_slug', 'digital_slug', 'gmb_slug', 'content_slug', 'seo_slug', 'status', 'created_by', 'created_at', 'updated_at'],
-        searchable: ['city'],
-        listColumns: ['city_id', 'state_id', 'city', 'status', 'created_at'],
-        editable: ['state_id', 'city', 'web_slug', 'digital_slug', 'gmb_slug', 'content_slug', 'seo_slug', 'status'],
-        icon: 'globalcity',
+    service_cards: {
+        displayName: 'Service Cards',
+        primaryKey: 'id',
+        columns: ['id', 'category_name', 'page_slug', 'title', 'description', 'sort_order', 'status', 'created_at', 'updated_at'],
+        searchable: ['category_name', 'page_slug', 'title', 'description'],
+        listColumns: ['id', 'category_name', 'page_slug', 'title', 'sort_order', 'status'],
+        editable: ['category_name', 'page_slug', 'title', 'description', 'sort_order', 'status'],
+        icon: 'cards',
     },
     settings: {
         displayName: 'Settings',
@@ -162,7 +153,7 @@ const TABLE_CONFIG = {
 router.get('/dashboard', async (req, res) => {
     try {
         // Total counts
-        const tables = ['states', 'citys', 'categories', 'posts', 'contacts', 'careers', 'footercontacts', 'landingcontacts', 'schedule_meetings', 'comments', 'metrocitys', 'users'];
+        const tables = ['states', 'citys', 'categories', 'posts', 'contacts', 'careers', 'footercontacts', 'landingcontacts', 'schedule_meetings', 'comments', 'metrocitys', 'faqs', 'service_cards', 'users'];
         const counts = {};
         for (const t of tables) {
             const result = await db.query(`SELECT COUNT(*) as count FROM ${t}`);
