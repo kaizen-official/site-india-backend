@@ -10,6 +10,7 @@ const adminRoutes = require('./routes/admin');
 const postsRoutes = require('./routes/posts');
 const faqsRoutes = require('./routes/faqs');
 const serviceCardsRoutes = require('./routes/service-cards');
+const uploadRoutes = require('./routes/upload');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +31,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/faqs', faqsRoutes);
 app.use('/api/service-cards', serviceCardsRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // ─── Categories Endpoint ─────────────────────────────────────────
 const db = require('./db');
