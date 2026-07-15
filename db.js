@@ -57,7 +57,7 @@ async function query(sql, params = []) {
 // Maps frontend route categories to DB category_name values
 const CATEGORY_MAP = {
   'gmb': 'Google Business',
-  'seo': 'Digital Marketing',
+  'seo': 'Seo',
   'web': 'Web Development',
   'marketing': 'Digital Marketing',
   'social-media': 'Social Media',
